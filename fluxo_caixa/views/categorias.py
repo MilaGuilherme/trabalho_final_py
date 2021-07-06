@@ -12,7 +12,6 @@ from django.template.defaulttags import register
 def categorias(request):  
   if request.method == 'POST':
     data = request.POST
-    print(data['category_type'])
     categoria = Categorias()
     categoria.name = data['name']
     categoria.description = data['description']

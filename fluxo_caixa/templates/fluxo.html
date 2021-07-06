@@ -31,37 +31,86 @@
     </form>
   </div>
   <div class="col-md-12">
-    <p>Saldo inicial: R${{saldo | floatformat:2}}</p>
+    <p>Saldo inicial: R${{saldo}}</p>
     <table class="table">
       {% for mes in meses %}
+      {% if pagamentos_mes|get_item:mes != 0 or recebimentos_mes|get_item:mes != 0 %}
       <thead>
         <tr>
           <th colspan="100">
             {{mes}}
           </th>
         </tr>
-          <th colspan="2">Receitas</th>
-          <th colspan="2">Despesas</th>
+        <tr>
+          <th colspan="100">Receitas</th>
+        </tr>
       </thead>
       <tbody>
-        {% for receita in result.Receber %}
-        {% if receita.due_date|get_month == mes %}
+        {% for conta in result.Receber %}
+        {% if conta.due_date|get_month == mes %}
         <tr>
           <td>
-            {{receita.category.name}}
-            <small>{{receita.description}}</small>
+            {{conta.category.name}}
+            <small>{{conta.description}}</small>
           </td>
           <td>
-            {{receita.value}}
-          </td>
+            {{conta.due_date}}
           </td>
           <td>
-            {{receita.due_date|get_month}}
+            {% if conta.status %}
+            Recebido
+            {% else %}
+            Não Recebido
+            {% endif %}
+          </td>
+          <td>
+            {{conta.value}}
           </td>
         </tr>
         {% endif %}
         {% endfor %}
       </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="100">Total : {{recebimentos_mes|get_item:mes}}</td>
+        </tr>
+      </tfoot>
+      <thead>
+        <tr>
+          <th colspan="100">Despesas</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for conta in result.Pagar %}
+        {% if conta.due_date|get_month == mes %}
+        <tr>
+          <td>
+            {{conta.category.name}}
+            <small>{{conta.description}}</small>
+          </td>
+          <td>
+            {{conta.due_date}}
+          </td>
+          <td>
+            {% if conta.status %}
+            Pago
+            {% else %}
+            A Pagar
+            {% endif %}
+          </td>
+          <td>
+            {{conta.value}}
+          </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="100">Total : {{pagamentos_mes|get_item:mes}}</td>
+        </tr>
+      </tfoot>
+      {% endif %}
       {% endfor %}
     </table>
   </div>
@@ -184,9 +233,9 @@
     let paid = document.getElementById('status')
     paid.addEventListener('change', function () {
       if (paid.checked) {
-        paid.value = True;
+        paid.value = 'True';
       } else {
-        paid.value = False;
+        paid.value = 'False';
       }
     })
 
