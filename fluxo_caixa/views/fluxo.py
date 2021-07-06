@@ -41,24 +41,31 @@ def fluxo(request: HttpRequest):
         recebimentos_mes = {'Jan':0, 'Fev':0, 'Mar':0, 'Abr':0, 'Mai':0, 'Jun':0,
          'Jul':0, 'Ago':0, 'Set':0, 'Out':0, 'Nov':0, 'Dez':0}
 
+        balanco_mes = {'Jan':0, 'Fev':0, 'Mar':0, 'Abr':0, 'Mai':0, 'Jun':0,
+         'Jul':0, 'Ago':0, 'Set':0, 'Out':0, 'Nov':0, 'Dez':0}      
+
         for contas in contasPagar:
           conta_mes = get_month(contas.due_date)
-          valor_mes = contas.value
-          pagamentos_mes[conta_mes]+=valor_mes
+          valor_mes = round(contas.value,2)
+          valor = pagamentos_mes[conta_mes]
+          pagamentos_mes[conta_mes]= round(valor_mes+valor,2)
 
         for contas in contasReceber:
           conta_mes = get_month(contas.due_date)
-          valor_mes = contas.value
-          recebimentos_mes[conta_mes]+=valor_mes
+          valor_mes = round(contas.value,2)
+          valor = recebimentos_mes[conta_mes]
+          recebimentos_mes[conta_mes] = round(valor_mes+valor,2)
 
+        for bal in balanco_mes:
+          balanco_mes[bal] = recebimentos_mes[bal]-pagamentos_mes[bal]
+
+        print(balanco_mes)
         result = {
             "Pagar": contasPagar,
             "Receber": contasReceber
         }
 
-        print(recebimentos_mes)
-
-        return render(request, 'fluxo.html', {'result': result, 'saldo': saldo, 'receita_tipos': dict(RECEITA_TIPOS), 'pagamento_tipos': dict(PAGAMENTO_TIPOS), 'categorias': categorias, 'meses':meses,'pagamentos_mes':pagamentos_mes, 'recebimentos_mes':recebimentos_mes})
+        return render(request, 'fluxo.html', {'result': result, 'saldo': saldo, 'receita_tipos': dict(RECEITA_TIPOS), 'pagamento_tipos': dict(PAGAMENTO_TIPOS), 'categorias': categorias, 'meses':meses,'pagamentos_mes':pagamentos_mes, 'recebimentos_mes':recebimentos_mes,'balanco_mes':balanco_mes})
 
 
 @register.filter

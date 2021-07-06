@@ -69,12 +69,10 @@
         </tr>
         {% endif %}
         {% endfor %}
-      </tbody>
-      <tfoot>
         <tr>
-          <td colspan="100">Total : {{recebimentos_mes|get_item:mes}}</td>
+          <td class="text-right font-weight-bold" colspan="100">Total : {{recebimentos_mes|get_item:mes}}</td>
         </tr>
-      </tfoot>
+      </tbody>
       <thead>
         <tr>
           <th colspan="100">Despesas</th>
@@ -104,12 +102,13 @@
         </tr>
         {% endif %}
         {% endfor %}
-      </tbody>
-      <tfoot>
         <tr>
-          <td colspan="100">Total : {{pagamentos_mes|get_item:mes}}</td>
+          <td class="text-right font-weight-bold" colspan="100">Total : {{pagamentos_mes|get_item:mes}}</td>
         </tr>
-      </tfoot>
+      </tbody>
+      <tr class="table-light">
+        <td class="text-right font-weight-bold" colspan="100">Balanço: {{balanco_mes|get_item:mes}}</td>
+      </tr>
       {% endif %}
       {% endfor %}
     </table>
