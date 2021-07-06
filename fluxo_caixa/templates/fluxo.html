@@ -1,0 +1,195 @@
+{% include 'layout.html' %}
+{% block content %}
+<div class="container">
+  <h2>Fluxo de caixa</h2>
+  <div class="my-2">
+    <button class="btn btn-primary" onclick="openForm('receita')">Nova Receita</button>
+    <button class="btn btn-warning" onclick="openForm('despesa')">Nova Despesa</button>
+  </div>
+  <div id='form'>
+
+  </div>
+  <hr />
+  <div class="col-md-12">
+    <form action="{% url 'fluxo' %}" method="GET">
+      <div class="form-group row align-items-end">
+        <div class="form-group col-sm">
+          <label for="balance">Balanço inicial</label>
+          <input class="form-control" type="number" name="balance" id="balance" step="0.01" required>
+        </div>
+        <div class="form-group col-sm">
+          <label for="init_date">Insira data de início</label>
+          <input class="form-control" type="date" name="init_date" id="init_date" required>
+        </div>
+        <div class="form-group col-sm">
+          <label for="end_date">Insira data de fim</label>
+          <input class="form-control" type="date" name="end_date" id="end_date" required>
+        </div>
+        <button class="btn btn-outline-primary col-sm bottom mb-3" style="max-height: 45px;"
+          type="submit">Gerar</button>
+      </div>
+    </form>
+  </div>
+  <div class="col-md-12">
+    <p>Saldo inicial: R${{saldo | floatformat:2}}</p>
+    <table class="table">
+      {% for mes in meses %}
+      <thead>
+        <tr>
+          <th colspan="100">
+            {{mes}}
+          </th>
+        </tr>
+          <th colspan="2">Receitas</th>
+          <th colspan="2">Despesas</th>
+      </thead>
+      <tbody>
+        {% for receita in result.Receber %}
+        {% if receita.due_date|get_month == mes %}
+        <tr>
+          <td>
+            {{receita.category.name}}
+            <small>{{receita.description}}</small>
+          </td>
+          <td>
+            {{receita.value}}
+          </td>
+          </td>
+          <td>
+            {{receita.due_date|get_month}}
+          </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+      </tbody>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+</div>
+
+
+{% endblock %}
+<script>
+  const formBody = document.getElementById('form')
+  forms = {
+    despesa: ` <form class="form card p-3 bg-light rounded" action="{% url 'criar_a_pagar' %}" method="POST">
+      <h3>Adicionar nova despesa</h3>
+      <div class="form-group row align-items-end">
+        <div class="form-group col-2">
+          <label for="due_date">Data de vencimento:</label>
+          <input class="form-control" type="date" name="due_date" id="due_date" required>
+        </div>
+        <div class="form-group col-2">
+          <label for="payment_date">Data do pagamento:</label>
+          <input class="form-control" type="date" name="payment_date" id="payment_date" required>
+        </div>
+        <div class="form-group col-2">
+          <label for="value">Valor</label>
+          <input class="form-control" type="number" name="value" id="value" step="0.01" required>
+        </div>
+        <div class="form-group col-6">
+          <label for="description">Descrição:</label>
+          <textarea type="text" class="form-control" name="description" id="description" rows="1"></textarea>
+        </div>
+        <div class="form-group col-sm">
+          <label for="category">Tipo de despesa:</label>
+          <select class="form-control" name="category" id="category">
+            {% for categoria in categorias %}
+            {% if categoria.category_type == 'S'%}
+            <option value="{{categoria.id}}">{{categoria.name}}</option>
+            {% endif %}
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group col-sm">
+          <label for="payment_method">Método de pagamento:</label>
+          <select class="form-control" name="payment_method" id="payment_method">
+            {% for type in pagamento_tipos %}
+            <option value="{{type.0}}">{{pagamento_tipos|get_item:type}}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group form-check mx-3 pb-2">
+          <input class="form-check-input" type="checkbox" name="status" value="False" id="status">
+          <label class="form-check-label" for="status">
+            Pago
+          </label>
+        </div>
+        <button class="btn btn-primary bottom mb-3 mr-3 col-sm" style="max-height: 45px;" type="submit">Lançar
+          despesa</button>
+      </div>
+    </form>`,
+    receita: `
+    <form class="form card p-3 bg-light rounded" action="{% url 'criar_a_receber' %}" method="POST">
+      <h3>Adicionar nova receita</h3>
+      <div class="form-group row align-items-end">
+        <div class="form-group col-2">
+          <label for="due_date">Data de recebimento:</label>
+          <input class="form-control" type="date" name="due_date" id="due_date" required>
+        </div>
+        <div class="form-group col-2">
+          <label for="value">Valor</label>
+          <input class="form-control" type="number" name="value" id="value" step="0.01" required>
+        </div>
+        <div class="form-group col-6">
+          <label for="description">Descrição:</label>
+          <textarea type="text" class="form-control" name="description" id="description" rows="1"></textarea>
+        </div>
+        <div class="form-group col-sm">
+          <label for="category">Tipo de receita:</label>
+          <select class="form-control" name="category" id="category">
+            {% for categoria in categorias %}
+            {% if categoria.category_type == 'E'%}
+            <option value="{{categoria.id}}">{{categoria.name}}</option>
+            {% endif %}
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group col-sm">
+          <label for="payment_method">Método de pagamento:</label>
+          <select class="form-control" name="payment_method" id="payment_method">
+            {% for type in receita_tipos %}
+            <option value="{{type.0}}">{{receita_tipos|get_item:type}}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group form-check mx-3 pb-2">
+          <input class="form-check-input" type="checkbox" name="status" value="False" id="status">
+          <label class="form-check-label" for="status">
+            Recebio
+          </label>
+        </div>
+        <button class="btn btn-primary bottom mb-3 mr-3 col-sm" style="max-height: 45px;" type="submit">Lançar
+          receita</button>
+      </div>
+    </form>
+    `
+  }
+
+  function openForm(form) {
+
+    document.getElementById('init_date').valueAsDate = new Date();
+    document.getElementById('end_date').valueAsDate = new Date();
+
+    if (formBody.hasChildNodes) {
+      for (i of formBody.children) {
+        formBody.removeChild(i);
+      }
+    }
+    let template = document.createElement('div');
+    template.innerHTML = forms[form];
+    formBody.appendChild(template);
+    document.getElementById('due_date').valueAsDate = new Date();
+    let paid = document.getElementById('status')
+    paid.addEventListener('change', function () {
+      if (paid.checked) {
+        paid.value = True;
+      } else {
+        paid.value = False;
+      }
+    })
+
+  }
+
+</script>
